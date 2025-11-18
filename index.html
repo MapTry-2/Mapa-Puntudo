@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mapa Leaflet con Ruta KML + Videos Locales</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Plugin Leaflet Omnivore (para cargar KML) -->
+  <script src="https://unpkg.com/leaflet-omnivore/leaflet-omnivore.min.js"></script>
+
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+
+    .media-popup img, .media-popup video {
+      width: 260px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+  // Inicializar el mapa
+  const map = L.map("map").setView([0, 0], 13);
+
+  // Capa de mapa base (OpenStreetMap)
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+  }).addTo(map);
+
+  // ================================================
+  // CARGAR RUTA KML
+  // ================================================
+  const ruta = omnivore.kml("ruta.kml")
+    .on("ready", function() {
+      map.fitBounds(ruta.getBounds()); // Centra el mapa en la ruta
+    })
+    .addTo(map);
+
+  // ================================================
+  // MARCADORES CON VIDEOS E IMÁGENES LOCALES
+  // ================================================
+  const puntos = [
+    {
+      coords: [40.4168, -3.7038],
+      img: "media/foto1.jpg",
+      video: "media/video1.mp4",
+      titulo: "Punto 1"
+    },
+    {
+      coords: [40.4200, -3.7050],
+      img: "media/foto2.jpg",
+      video: "media/video2.mp4",
+      titulo: "Punto 2"
+    }
+  ];
+
+  puntos.forEach(p => {
+    const html = `
+      <div class="media-popup">
+        <h3>${p.titulo}</h3>
+        <img src="${p.img}">
+        
+        <video controls>
+          <source src="${p.video}" type="video/mp4">
+        </video>
+      </div>
+    `;
+
+    L.marker(p.coords).addTo(map).bindPopup(html);
+  });
+
+</script>
+</body>
+</html>
