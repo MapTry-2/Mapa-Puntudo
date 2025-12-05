@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mapa Leaflet con Ruta KML + Videos Locales</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Plugin Leaflet Omnivore (para cargar KML) -->
+  <script src="https://unpkg.com/leaflet-omnivore/leaflet-omnivore.min.js"></script>
+
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+
+    .media-popup img, .media-popup video {
+      width: 260px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-omnivore/leaflet-omnivore.min.js"></script>
+
+<script>
+  // Inicializar el mapa
+  const map = L.map("map").setView([0, 0], 13);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+
+  // Cargar KML
+  const ruta = omnivore.kml("ruta.kml")
+    .on("ready", function() {
+      map.fitBounds(ruta.getBounds());
+    })
+    .addTo(map);
+
+  // Cargar CSV
+  fetch('puntos.csv')
+    .then(response => response.text())
+    .then(text => {
+      const lines = text.split('\n');
+      lines.forEach((line, index) => {
+        if(index === 0 || !line.trim()) return; // Saltar encabezado o líneas vacías
+        const [nombrevideo, coords] = line.split(';');
+        const [lat, lon] = coords.split(',').map(Number);
+
+        // Crear HTML del popup
+        const html = `
+          <div class="media-popup">
+            <h3>${nombrevideo}</h3>
+            <video controls>
+              <source src="media/${nombrevideo}.mp4" type="video/mp4">
+            </video>
+          </div>
+        `;
+
+        // Crear marcador
+        L.marker([lat, lon]).addTo(map).bindPopup(html);
+      });
+    });
+</script>
+
+
+</script>
+</body>
+</html>
